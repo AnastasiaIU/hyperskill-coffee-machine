@@ -1,7 +1,7 @@
 # hyperskill-coffee-machine
 Here is my implementation of the [Coffee Machine (Kotlin)](https://hyperskill.org/projects/67) project from JetBrains Academy.
 
-This Kotlin project is implemented with a usage of State pattern and displays information in the standard output.
+This Kotlin project is implemented with a usage of State pattern with an interface and displays information in the standard output.
 
 ### Example of the output
 The greater-than symbol followed by a space (> ) represents the user input. Note that it's not part of the input.
