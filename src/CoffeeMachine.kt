@@ -1,41 +1,76 @@
 package machine
 
+/**
+ * Represents the main class of the coffee machine application.
+ *
+ * This class manages the overall state of the coffee machine, including its resources and current state.
+ *
+ * @property _water The current amount of water in milliliters available in the coffee machine.
+ * @property _milk The current amount of milk in milliliters available in the coffee machine.
+ * @property _beans The current amount of coffee beans in grams available in the coffee machine.
+ * @property _money The current amount of money in currency units collected by the coffee machine.
+ * @property _cups The current number of disposable cups available in the coffee machine.
+ */
 class CoffeeMachine(
-    private var water: Int,
-    private var milk: Int,
-    private var beans: Int,
-    private var money: Int,
-    private var cups: Int
+    private var _water: Int,
+    private var _milk: Int,
+    private var _beans: Int,
+    private var _money: Int,
+    private var _cups: Int
 ) {
-    private val stateChooseAction: IMachineState = StateChooseAction(this)
-    private val stateChooseCoffee: IMachineState = StateChooseCoffee(this)
-    private val stateCheckSupplies: IMachineState = StateCheckSupplies(this)
-    private val stateMakeCoffee: IMachineState = StateMakeCoffee(this)
-    private val statePrintRemaining: IMachineState = StatePrintRemaining(this)
-    private val stateFillSupplies: IMachineState = StateFillSupplies(this)
-    private val stateCollectMoney: IMachineState = StateCollectMoney(this)
+    val water: Int
+        get() = _water
+    val milk: Int
+        get() = _milk
+    val beans: Int
+        get() = _beans
+    val money: Int
+        get() = _money
+    val cups: Int
+        get() = _cups
 
+    // State instances representing different actions or phases in the coffee machine's operation.
+    private val stateChooseAction: IMachineState by lazy { StateChooseAction(this) }
+    private val stateChooseCoffee: IMachineState by lazy { StateChooseCoffee(this) }
+    private val stateCheckSupplies: IMachineState by lazy { StateCheckSupplies(this) }
+    private val stateMakeCoffee: IMachineState by lazy { StateMakeCoffee(this) }
+    private val statePrintRemaining: IMachineState by lazy { StatePrintRemaining(this) }
+    private val stateFillSupplies: IMachineState by lazy { StateFillSupplies(this) }
+    private val stateCollectMoney: IMachineState by lazy { StateCollectMoney(this) }
+
+    // The current operational state of the coffee machine.
     private var currentState: IMachineState = stateChooseAction
+
+    // Flag to control the main operation loop of the coffee machine.
     private var isMachineRunning = true
+
+    // The type of coffee selected by the user, if any.
     private var chosenCoffee: Coffee? = null
-    var supplyToFill: String? = null
 
-    var isSuppliesSufficient: Boolean? = null
-    var isWaterSufficient: Boolean? = null
-    var isMilkSufficient: Boolean? = null
-    var isBeansSufficient: Boolean? = null
-    var isCupsSufficient: Boolean? = null
-
+    /**
+     * Checks if the coffee machine is currently running.
+     * @return true if the machine is running, false otherwise.
+     */
     fun isMachineRunning(): Boolean = isMachineRunning
 
+    /**
+     * Sets the current state of the coffee machine to a new state.
+     * @param state The new state to set the coffee machine to.
+     */
     fun setState(state: IMachineState) {
         currentState = state
     }
 
+    /**
+     * Sets the chosen coffee type to the specified coffee.
+     *
+     * @param coffee The coffee type chosen by the user.
+     */
     fun setChosenCoffee(coffee: Coffee) {
         chosenCoffee = coffee
     }
 
+    // Getter methods for each state, allowing transitions between states.
     fun getChooseActionState(): IMachineState = stateChooseAction
     fun getChooseCoffeeState(): IMachineState = stateChooseCoffee
     fun getCheckSuppliesState(): IMachineState = stateCheckSupplies
@@ -44,91 +79,65 @@ class CoffeeMachine(
     fun getFillSuppliesState(): IMachineState = stateFillSupplies
     fun getCollectMoneyState(): IMachineState = stateCollectMoney
 
-    fun getMoneyAmount(): Int = money
+    /**
+     * Retrieves the chosen coffee type.
+     *
+     * @return The chosen coffee type, or null if no coffee has been chosen.
+     */
+    fun getChosenCoffee(): Coffee? = chosenCoffee
 
+    /**
+     * Resets the amount of money collected by the coffee machine to 0.
+     */
+    fun resetMoneyAmount() {
+        _money = 0
+    }
+
+    /**
+     * Resets the chosen coffee type to null.
+     */
     fun resetChosenCoffee() {
         chosenCoffee = null
     }
 
-    fun resetSuppliesState() {
-        isWaterSufficient = null
-        isMilkSufficient = null
-        isBeansSufficient = null
-        isCupsSufficient = null
-    }
-
-    fun resetMoneyAmount() {
-        money = 0
-    }
-
-    fun printRemaining() {
-        println(
-            "\nThe coffee machine has:\n" +
-                    "$water ml of water\n" +
-                    "$milk ml of milk\n" +
-                    "$beans g of coffee beans\n" +
-                    "$cups disposable cups\n" +
-                    "$$money of money\n"
-        )
-    }
-
-    fun checkSupplies() {
-        isSuppliesSufficient = true
-
-        when {
-            water < chosenCoffee!!.water -> {
-                isSuppliesSufficient = false
-                isWaterSufficient = false
-            }
-
-            milk < chosenCoffee!!.milk -> {
-                isSuppliesSufficient = false
-                isMilkSufficient = false
-            }
-
-            beans < chosenCoffee!!.beans -> {
-                isSuppliesSufficient = false
-                isBeansSufficient = false
-            }
-
-            cups < chosenCoffee!!.cups -> {
-                isSuppliesSufficient = false
-                isCupsSufficient = false
-            }
-        }
-    }
-
+    /**
+     * Subtracts the required supplies from the current supplies based on the chosen coffee type.
+     * Adds the cost of the coffee to the total money collected.
+     */
     fun subtractSupplies() {
-        water -= chosenCoffee!!.water
-        milk -= chosenCoffee!!.milk
-        beans -= chosenCoffee!!.beans
-        cups -= chosenCoffee!!.cups
-        money += chosenCoffee!!.money
+        _water -= chosenCoffee!!.water
+        _milk -= chosenCoffee!!.milk
+        _beans -= chosenCoffee!!.beans
+        _cups -= chosenCoffee!!.cups
+        _money += chosenCoffee!!.money
     }
 
-    fun addWater(amount: Int) {
-        water += amount
-    }
+    // Methods to add supplies to the coffee machine.
+    fun addWater(amount: Int) { _water += amount }
+    fun addMilk(amount: Int) { _milk += amount }
+    fun addBeans(amount: Int) { _beans += amount }
+    fun addCups(amount: Int) { _cups += amount }
 
-    fun addMilk(amount: Int) {
-        milk += amount
-    }
-
-    fun addBeans(amount: Int) {
-        beans += amount
-    }
-
-    fun addCups(amount: Int) {
-        cups += amount
-    }
-
+    /**
+     * Delegates the printing of output to the current state.
+     */
     fun printOutput() {
         currentState.printOutput()
     }
 
+    /**
+     * Delegates reading of input to the current state.
+     *
+     * @return The user input as a String.
+     */
     fun readInput(): String = currentState.readInput()
 
-    fun processInput(userInput: String) {
-        isMachineRunning = currentState.processInput(userInput)
+    /**
+     * Delegates the execution of state logic to the current state.
+     *
+     * @param userInput The user input as a String.
+     */
+    fun executeStateLogic(userInput: String) {
+        isMachineRunning = currentState.executeStateLogic(userInput)
     }
 }
